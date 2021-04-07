@@ -406,6 +406,153 @@ $ kubectl get pod,svc
 
 ### 二进制包
 
+#### 1.环境
+
+#### 2.生成cfssl自签证书
+
+#### 3.部署etcd集群
+
+#### 4.为apiserver自签证书
+
+#### 5.部署master相关组件
+
++ apiserver
++ controller-manager
++ scheduler
+
+#### 6.部署node组件
+
++ docker
++ kubelet
++ kube-proxy
+
+#### 7.部署CNI网络插件
+
+### 核心技术
+
+#### kubectl
+
+```shell
+kubectl create deployment nginx --image=nginx
+kubectl expose deployment nginx --port=80 --type=NodePort
+kubectl get pod,svc
+```
+
+#### yaml文件
+
+k8s 集群中对资源管理和资源对象编排部署都可以通过声明样式（YAML）文件来解决，也就是可以把需要对资源对象操作编辑到 YAML 格式文件中，我们把这种文件叫做资源清单文 件，通过 kubectl 命令直接使用资源清单文件就可以实现对大量的资源对象进行编排部署 了。
+
++ 使用kubectl create命令生成yaml文件
+
+  > kubectl create deployment web --image=nginx -o yaml --dry-run > my1.yaml
+
++ 使用kubectl get命令导出yaml文件
+
+  > kubectl get deploy nginx -o=yaml --export > my2.yaml
+
+#### pod
+
+pod 是 k8s 系统中可以创建和管理的最小单元，是资源对象模型中由用户创建或部署的最 小资源对象模型，也是在 k8s 上运行容器化应用的资源对象，其他的资源对象都是用来支 撑或者扩展 Pod 对象功能的，比如控制器对象是用来管控 Pod 对象的，Service 或者 Ingress 资源对象是用来暴露 Pod 引用对象的，PersistentVolume 资源对象是用来为 Pod 提供存储等等，k8s 不会直接处理容器，而是 Pod，Pod 是由一个或多个 container 组成 Pod 是 Kubernetes 的最重要概念，每一个 Pod 都有一个特殊的被称为”根容器“的 Pause 容器。Pause 容器对应的镜 像属于 Kubernetes 平台的一部分，除了 Pause 容器，每个 Pod 还包含一个或多个紧密相关的用户业务容器
+
++ 创建容器使用docker 一个docker对应一个容器 一个容器有进程一个容器运行一个应用程序
++ pod是多进程设计 运行多个应用程序
++ 一个pod有多个容器一个容器里面运行一个应用容器
++ pod存在为亲密性应用
+  + 两个应用之间进行交互 同一个pod中的容器相互访问可以使用localhost
+  + 网络之间调用
+  + 连个应用频繁
+
+##### 共享网络
+
+容器之间本身是相互隔离的 namespace group
+
+实现机制：每个pod都会有个根容器 Pause再创建其他自己的容器，将自己的容器加入Pause容器中 这样所有的容器都住在同一个namespace 也共享网络 同一个ip mac地址 port
+
+##### 共享存储
+
+数据卷 使用数据卷进行持久化操作
+
+数据持久化
+
++ 日志
++ 业务数据
+
+##### 镜像拉取策略
+
+IfNotPresent 只有镜像不存在时，才会进行镜像拉取。
+
+Always 不管镜像是否存在都会进行一次拉取。
+
+Never 不管镜像是否存在都不会进行拉取
+
+##### 重启机制
+
+![image-20210407203843371](images\image-20210407203843371.png)
+
+##### 资源限制
+
+```yaml
+sepc
+containers:
+- name: db
+image: mysql
+resources:
+requests:  #调度大小  最小申请的资源数量 limits是资源最大允许使用的量 不能突破
+    memory: "64Mi"
+    cpu: "250m"
+limits:   # 最大
+    memory: "128Mi"
+    cpu: "500m
+```
+
+##### 健康检查
+
+livenessProbe 存活检查
+
+如果检查失败 就会杀死容器 根据Pod的重启策略操作
+
+readinessProbe 就绪检查
+
+如果检查失败 会把pod从service中移除
+
+httpget exec tcpsocket
+
+##### 创建pod流程
+
+master节点
+
+create pod -> apiserver -> etcd
+
+scheduler -> apiserver -> etcd 调度算法将pod分配到一个node上
+
+node节点
+
+kubelet -> apiserver -> etcd 读取拿到分配给当前节点的pod -> 通过docker创建容器
+
+##### pod调度属性
+
++ pod资源限制
+
+  根据request 找到足够的node节点进行调度
+
++ 节点选择器标签
+
+  > kubectl label node node1 env_role=dev
+
++ 节点亲和性 nodeAffinity
+
+  + 硬亲和性
+
+    约束条件必须满足
+
+  + 软亲和性
+
+    尝试满足
+
+
+
+
+
 
 
 
