@@ -184,7 +184,7 @@ k8s是谷歌在2014年开源的容器化集群管理系统
 
 - 主要功能是接收调度pod到适合的运算节点上
 - 预算策略( predict )
-- 优选策略( priorities )、、
+- 优选策略( priorities )
 
 #### etcd
 
@@ -549,13 +549,158 @@ kubelet -> apiserver -> etcd 读取拿到分配给当前节点的pod -> 通过do
 
     尝试满足
 
++ 污点和污点容忍
 
+  Taint污点 不做普通的分配调度 是节点属性
 
+  + 专用节点
 
+  + 专用节点配置特点和硬件节点
+  + 基于Taint驱逐
 
+  > kubectl describe node k8smaster | grep Taint
 
+  NoSchedule   一定不被调度
 
+  PreferNoSchdule  尽量不被调度
 
+  NoExecute 不会调度，并且还会驱逐Node已有Pod
+  > kubectl create deployment web --image-nginx
+  >
+  > kubectl scale deployment web --replicas=5
+
+  + 为节点添加污点
+
+    > kubectl taint node k8snode1 env_role=yes:NoSchdule
+    >
+    > 删除污点
+    >
+    > kubectl taint node k8snode1 env_role:NoSchedule-
+
++ 污点容忍
+
+#### Controller
+
++ 什么是controller
+
+  在集群上管理和运行容器的对象
+
++ Pod和Controller之间的关系
+
+  pod通过controller进行应用的运维，通过label标签建立关系
+
++ deployment控制器应用场景
+
+  > 导出yaml文件
+  >
+  > kubectl create deplayment web --image=nginx --dry-run -o yaml > web.yaml
+  >
+  > 部署应用
+  >
+  > kubectl apply -f web.yaml
+  >
+  > 对外暴露端口号
+  >
+  > kubectl expose deployment web --port=80 --type=NodePort --target-port=80 --name=web1 -o yaml > web1.yaml
+  >
+  > kubectl apply -f web1.yaml
+
++ yaml 字段说明
+
++ deployment控制器部署应用
+
++ 升级回滚和弹性伸缩
+
+  ```yaml
+  # 设定版本
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    creationTimestamp: null
+    labels:
+      app: web
+    name: web
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: web
+    strategy: {}
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: web
+      spec:
+        containers:
+        - image: nginx:1.14
+          name: nginx
+          resources: {}
+  status: {}
+  ```
+
+  > kubectl set image deployment web nginx=nginx:1.15
+
+  > kubectl rollout status deployment web
+  >
+  > 查看升级版本
+  >
+  > kubectl rollout history deployment web
+  >
+  > 回滚上一个版本
+  >
+  > kubectl rollout undo  deployment web
+  >
+  > 指定回滚版本
+  >
+  > kubectl rollout undo  deployment web --to-revision=2
+  >
+  > 创建10个副本 弹性伸缩
+  >
+  > kubectl scale deployment web --replicas=10
+
+#### service
+
+> kubectl get pods -o wide
+
+服务发现 防止pod失联
+
+定义一组pod访问策略
+
+pod和service关系
+
+根据label和selector标签建立关联的
+
++ 常见service类型
+
+  + ClusterIP
+
+    集群内部进行使用
+
+  + NodePort
+
+    对外访问应用使用
+
+  + LoadBalancer
+
+    对外访问应用使用 公有云使用
+
+无状态和有状态
+
+无状态
+
++ 认为pod都是一样的
++ 没有顺序要求
++ 不用考虑在哪个node运行
++ 随意进行伸缩和扩展
+
+有状态
+
++ 上面因素都需要考虑到
++ 让每个pod独立 并保持pod启动和唯一性
++ 有序 比如mysql主从
+
+部署有状态pod `statefulset`
 
 
 
