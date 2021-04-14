@@ -702,6 +702,109 @@ pod和service关系
 
 部署有状态pod `statefulset`
 
+#### DaemonSet
+
+部署守护进程DaemonSet
+
+在每个node上面运行一个pod，新加入的pod也同时运行在一个node里面
+
+> kubectl exec -it [podname] bash
+
+#### Job
+
+##### job
+
+一次性任务
+
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pi
+spec:
+  template:
+    spec:
+      containers:
+      - name: pi
+        image: perl
+        command: ["perl","-Mbignum=bpi","-wle","print bpi(2000)"]
+      restartPolicy: Never
+  backoffLimit: 4
+```
+
+> kubectl create -f job.yaml
+>
+> 
+
+##### cronjob
+
+定时任务
+
+![image-20210413095452001](images/image-20210413095452001.png)
+
+> kubectl apply -f cronjob.yaml
+
+#### Secret
+
+对数据加密 并且存在etcd中 让pod以挂载Volume方式读写
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysecret
+type: Opaque
+data:
+  username: YWRtaW4=
+  password: MWYyZDFlMmU2N2Rm
+```
+
+#### ConfigMap
+
+存储不加密数据到etcd中让Pod以变量或者Volume挂载到容器中  使用场景：配置文件
+
+#### k8s集群安全机制
+
+认证->授权->准入控制
+
+进行访问的时候 过程中都需要经过`apiserver`，`apiserver`做统一协调。访问过程中需要证书、token、或者用户名密码，如果访问pod现需要`serviceAccount`
+
+传输安全 对外不暴露8080端口，只能内部访问，对外使用端口6443
+
+认证：客户端身份认证常用方式：
+
++ https证书认证，基于ca证书
++ http token认证 通过token识别用户
++ http 基本认证 用户名+密码认证
+
+授权
+
++ 基于RBAC进行授权操作
+  + 角色
+  + 角色绑定
+  + 主体
++ 基于角色访问控制
+
+准入控制
+
++ 准入控制列表 如果有请求内容则访问
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
