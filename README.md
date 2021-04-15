@@ -733,8 +733,6 @@ spec:
 ```
 
 > kubectl create -f job.yaml
->
-> 
 
 ##### cronjob
 
@@ -746,7 +744,7 @@ spec:
 
 #### Secret
 
-对数据加密 并且存在etcd中 让pod以挂载Volume方式读写
+对数据加密 并且存在`etcd`中 让pod以挂载Volume方式读写
 
 ```yaml
 apiVersion: v1
@@ -759,11 +757,11 @@ data:
   password: MWYyZDFlMmU2N2Rm
 ```
 
-#### ConfigMap
+#### `ConfigMap`
 
-存储不加密数据到etcd中让Pod以变量或者Volume挂载到容器中  使用场景：配置文件
+存储不加密数据到`etcd`中让Pod以变量或者Volume挂载到容器中  使用场景：配置文件
 
-#### k8s集群安全机制
+#### `k8s`集群安全机制
 
 认证->授权->准入控制
 
@@ -773,13 +771,13 @@ data:
 
 认证：客户端身份认证常用方式：
 
-+ https证书认证，基于ca证书
-+ http token认证 通过token识别用户
-+ http 基本认证 用户名+密码认证
++ `https`证书认证，基于ca证书
++ `http` token认证 通过token识别用户
++ `http` 基本认证 用户名+密码认证
 
 授权
 
-+ 基于RBAC进行授权操作
++ 基于`RBAC`进行授权操作
   + 角色
   + 角色绑定
   + 主体
@@ -789,21 +787,85 @@ data:
 
 + 准入控制列表 如果有请求内容则访问
 
+#### Ingress
 
+Ingress和pod通过service相关联的
 
+> `kubectl` create deployment web --image=`nginx`
+>
+> `kubectl` expose deployment web --port=80 target-port=80 --type=`NodePort`
 
+#### Helm
 
+包管理工具，类似与`linux`中的yum，可以方便的将之前打包好的yaml文件部署到`k8s`上
 
++ helm可以对`yaml`文件进行一个整体管理
++ 实现`yaml`高效复用
++ 使用helm应用级别的版本管理
 
+##### helm
 
+命令行客户端工具
 
+##### chart
 
+把`yaml`打包，是`yaml`集合
 
+##### Release
 
+基于chart部署的实体，应用级别的版本管理
 
++ 仓库配置
 
+![image-20210414145459941](images/image-20210414145459941.png)
 
++ 快速部署应用
 
+  + 搜索相关应用
+
+    > helm search repo [name]
+
+  + 根据搜索到的内容 选择进行安装
+
+    > helm install [name] [搜索之后应用的名称]
+    >
+    > 查看安装的状态
+    >
+    > helm list
+    >
+    > helm status [安装之后的名称]
+
+#### 集群资源监控
+
++ 监控指标
+
+  + 集群监控
+    + 节点资源利用率 
+    + 节点数
+    + 运行的pods
+  + pod监控
+    + 容器指标
+    + 应用程序
+
++ 监控平台
+
+  + `prometheus+Grafana`
+
+  + prometheus
+
+    一套开源的监控、报警、数据库
+
+    以HTTP协议周期性抓取被监控组件的状态
+
+    不需要复杂的继承过程，使用http接口接入就可以
+
+  + Grafana
+
+    开源的数据分析和可视化工具
+
+    支持多数据源
+
+    ![image-20210415084148870](images/image-20210415084148870.png)
 
 
 
